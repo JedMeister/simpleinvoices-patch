@@ -1,0 +1,5 @@
+Free web based invoicing developed by the community, for the community
+
+    Simple Invoices is a basic invoicing system designed with simplicity and functionality in mind. Catering for the needs of small organisations and home users.
+
+SimpleInvoices (SI) is a broser based invoicing app that creates and sends invoices. Invoices can be emailed (.pdf) or exported (.pdf/.doc/.xls/plain text - .odt/.ods are also supported via config adjustment).

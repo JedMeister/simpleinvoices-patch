@@ -1,0 +1,61 @@
+#!/bin/bash -ex
+
+# SimpleInvoices TKLPatch v0.3 by JedMeister (Jeremy Davis)
+# To be applied to TKL LAMP v11.x (tested on v11.1)
+#
+
+install()
+{
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get -y \
+        -o DPkg::Options::=--force-confdef \
+        -o DPkg::Options::=--force-confold \
+        install $@
+}
+
+HOSTNAME=simple-invoices
+
+# set hostname
+echo "$HOSTNAME" > /etc/hostname
+sed -i "s|127.0.1.1 \(.*\)|127.0.1.1 $HOSTNAME|" /etc/hosts
+
+# install a couple of required php modules
+install php5-gd php5-xsl
+
+# download and unzip simple invoices
+cd /var/www
+wget http://simpleinvoices.googlecode.com/files/simpleinvoices.2010.2.update-1.zip
+unzip simpleinvoices.2010.2.update-1.zip
+
+# disable default apache sites and enable simpleinvoices standalone
+a2dissite default
+#a2dissite default-ssl
+a2ensite simpleinvoices-standalone
+
+# enable rewrite module so .htaccess works
+a2enmod rewrite
+
+# overwrite default simple invoices conf file
+mv config.ini /var/www/simpleinvoices/config/
+
+# ensure ownership of simpleinvoices by webserver
+chown -R www-data:www-data /var/www/
+
+# create and import blank database
+service mysql start
+mysqladmin -u root create simple_invoices
+mysql -u root simple_invoices<si-setup.sql
+
+# shutdown services so patch finishes cleanly
+service apache2 stop
+service mysql stop
+
+# cleanup
+rm simpleinvoices.2010.2.update-1.zip
+rm si-setup.sql
+cd /var/www/simpleinvoices/tmp/
+rm -r cache/*
+rm -r log/*
+apt-get clean
+
+# end

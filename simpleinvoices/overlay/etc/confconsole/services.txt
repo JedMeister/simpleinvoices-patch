@@ -1,0 +1,9 @@
+SimpleInvoices:      https://$ipaddr
+Web shell:           https://$ipaddr:12320
+Webmin:              https://$ipaddr:12321
+PHPMyAdmin:          https://$ipaddr:12322
+SSH/SFTP:            root@$ipaddr (port 22)
+
+---------------------------------------
+Note: No http access to this appliance.
+---------------------------------------
