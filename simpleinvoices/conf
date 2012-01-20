@@ -14,6 +14,7 @@ install()
 }
 
 HOSTNAME=simple-invoices
+SI_VER=2011.1
 
 # set hostname
 echo "$HOSTNAME" > /etc/hostname
@@ -24,12 +25,11 @@ install php5-gd php5-xsl
 
 # download and unzip simple invoices
 cd /var/www
-wget http://simpleinvoices.googlecode.com/files/simpleinvoices.2010.2.update-1.zip
-unzip simpleinvoices.2010.2.update-1.zip
+wget http://simpleinvoices.googlecode.com/files/simpleinvoices.$SI_VER.zip
+unzip simpleinvoices.$SI_VER.zip
 
 # disable default apache sites and enable simpleinvoices standalone
 a2dissite default
-#a2dissite default-ssl
 a2ensite simpleinvoices-standalone
 
 # enable rewrite module so .htaccess works
@@ -51,7 +51,7 @@ service apache2 stop
 service mysql stop
 
 # cleanup
-rm simpleinvoices.2010.2.update-1.zip
+rm simpleinvoices.$SI_VER.zip
 rm si-setup.sql
 cd /var/www/simpleinvoices/tmp/
 rm -r cache/*

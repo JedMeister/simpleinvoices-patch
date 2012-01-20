@@ -1,0 +1,10 @@
+#!/bin/bash -e
+# SimpleInvoices firstboot config file
+
+# set SimpleInvoices admin password and email
+
+. /etc/default/inithooks
+
+[ -e $INITHOOKS_CONF ] && . $INITHOOKS_CONF
+
+$INITHOOKS_PATH/bin/simpleinvoices.py --pass="$APP_PASS" --email="$APP_EMAIL"
