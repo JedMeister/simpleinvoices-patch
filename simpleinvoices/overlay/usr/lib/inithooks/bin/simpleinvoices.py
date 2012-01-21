@@ -7,12 +7,12 @@ Option:
              DEFAULT=admin@example.com
 """
 
-import sys
+from sys import stderr, argv, exit
 import getopt
 import shutil
-import md5
-import random as random
-import string
+from hashlib import md5
+from random import choice
+from string import letters, digits
 
 from dialog_wrapper import Dialog
 from mysqlconf import MySQL
@@ -21,16 +21,16 @@ import os
 
 def usage(s=None):
     if s:
-        print >> sys.stderr, "Error:", s
-    print >> sys.stderr, "Syntax: %s [options]" % sys.argv[0]
-    print >> sys.stderr, __doc__
-    sys.exit(1)
+        print >> stderr, "Error:", s
+    print >> stderr, "Syntax: %s [options]" % argv[0]
+    print >> stderr, __doc__
+    exit(1)
 
 DEFAULT_EMAIL="admin@example.com"
 
 def main():
     try:
-        opts, args = getopt.gnu_getopt(sys.argv[1:], "h",
+        opts, args = getopt.gnu_getopt(argv[1:], "h",
                                        ['help', 'pass=', 'email='])
     except getopt.GetoptError, e:
         usage(e)
@@ -61,12 +61,7 @@ def main():
             "SimpleInvoices Password",
             "Enter new password for the SimpleInvoices Admin account")
 
-
-#    salt = "".join(random.choice(string.letters+string.digits) for line in range(1, 65))
-#    salt = "this_is_the_encryption_key_change_it"
-#    hash = md5.md5(password+':'+salt)
-    hash = md5.md5(password)
-    hashpass = hash.hexdigest()
+    hashpass = md5(password).hexdigest()
 
     m = MySQL()
     m.execute('UPDATE simple_invoices.si_user SET password=\"%s\"  WHERE id=\"1\";' % hashpass)
@@ -78,8 +73,7 @@ def main():
     CONF_FILE = CONF_DIR+"config.ini"
     BACKUP_FILE = CONF_FILE+".backup"
     TEMP_FILE = CONF_FILE+".tmp"
-#    SALT_LINE = "encryption.default.key = "
-#    NEW_SALT_LINE = SALT_LINE+salt+"\n"
+    CHANGE_LINE = "encryption.default.key", "nonce.key"
 
 # Backup conf
     shutil.copy2(CONF_FILE, BACKUP_FILE)
@@ -89,10 +83,16 @@ def main():
     temp = open(TEMP_FILE, "w")
     temp.write(conf.readline())
     for line in conf:
-#        if line.lstrip().startswith(SALT_LINE):
-#            temp.write(NEW_SALT_LINE)
-#        else:
-            temp.write(line)
+        if line.lstrip().startswith(CHANGE_LINE[0]):
+            encrpytkey = "".join(choice(letters+digits) for line in range(1, 32))
+            newline = CHANGE_LINE[0]+" = "+encrpytkey+"\n"
+            line = newline
+        elif line.lstrip().startswith(CHANGE_LINE[1]):
+            encrpytkey = "".join(choice(letters+digits) for line in range(1, 32))
+            newline = CHANGE_LINE[1]+" = "+encrpytkey+"\n"
+            line = newline
+        temp.write(line)
+        
     conf.close()
     temp.close()
 

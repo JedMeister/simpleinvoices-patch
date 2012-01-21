@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 # SimpleInvoices TKLPatch v0.3 by JedMeister (Jeremy Davis)
-# To be applied to TKL LAMP v11.x (tested on v11.1)
+# To be applied to TKL LAMP v11.x (tested on v11.2)
 #
 
 install()
@@ -37,6 +37,13 @@ a2enmod rewrite
 
 # overwrite default simple invoices conf file
 mv config.ini /var/www/simpleinvoices/config/
+
+# add rewrite to force https (.htaccess)
+echo >> /var/www/simpleinvoices/.htaccess
+echo >> /var/www/simpleinvoices/.htaccess
+echo "#Force https" >> /var/www/simpleinvoices/.htaccess
+echo "RewriteCond %{HTTPS} off" >> /var/www/simpleinvoices/.htaccess
+echo "RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}" >> /var/www/simpleinvoices/.htaccess
 
 # ensure ownership of simpleinvoices by webserver
 chown -R www-data:www-data /var/www/
