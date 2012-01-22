@@ -8,8 +8,8 @@ Option:
 """
 
 from sys import stderr, argv, exit
-import getopt
-import shutil
+from getopt import gnu_getopt, GetoptError
+from shutil import copy2, move
 from hashlib import md5
 from random import choice
 from string import letters, digits
@@ -17,7 +17,7 @@ from string import letters, digits
 from dialog_wrapper import Dialog
 from mysqlconf import MySQL
 
-import os
+#import os
 
 def usage(s=None):
     if s:
@@ -30,9 +30,9 @@ DEFAULT_EMAIL="admin@example.com"
 
 def main():
     try:
-        opts, args = getopt.gnu_getopt(argv[1:], "h",
+        opts, args = gnu_getopt(argv[1:], "h",
                                        ['help', 'pass=', 'email='])
-    except getopt.GetoptError, e:
+    except GetoptError, e:
         usage(e)
 
     email = ""
@@ -76,28 +76,25 @@ def main():
     CHANGE_LINE = "encryption.default.key", "nonce.key"
 
 # Backup conf
-    shutil.copy2(CONF_FILE, BACKUP_FILE)
+    copy2(CONF_FILE, BACKUP_FILE)
 
 # Write new conf to temp file
     conf = open(CONF_FILE, "r")
     temp = open(TEMP_FILE, "w")
     temp.write(conf.readline())
     for line in conf:
-        if line.lstrip().startswith(CHANGE_LINE[0]):
-            encrpytkey = "".join(choice(letters+digits) for line in range(1, 32))
-            newline = CHANGE_LINE[0]+" = "+encrpytkey+"\n"
-            line = newline
-        elif line.lstrip().startswith(CHANGE_LINE[1]):
-            encrpytkey = "".join(choice(letters+digits) for line in range(1, 32))
-            newline = CHANGE_LINE[1]+" = "+encrpytkey+"\n"
-            line = newline
+        for item in CHANGE_LINE:
+            if line.lstrip().startswith(item):
+                encrpytkey = "".join(choice(letters+digits) for line in range(1, 32))
+                newline = item+" = "+encrpytkey+"\n"
+                line = newline
         temp.write(line)
         
     conf.close()
     temp.close()
 
 # Rename temp file (and overwrite old conf)
-    shutil.move(TEMP_FILE, CONF_FILE)
+    move(TEMP_FILE, CONF_FILE)
 
 if __name__ == "__main__":
     main()
