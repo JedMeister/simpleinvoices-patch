@@ -16,6 +16,12 @@ install()
 HOSTNAME=simple-invoices
 SI_VER=2011.1
 
+# create and import blank database
+cd /var/www
+service mysql start
+mysqladmin -u root create simple_invoices
+mysql -u root simple_invoices<si-setup.sql
+
 # set hostname
 echo "$HOSTNAME" > /etc/hostname
 sed -i "s|127.0.1.1 \(.*\)|127.0.1.1 $HOSTNAME|" /etc/hosts
@@ -49,20 +55,21 @@ echo "RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}" >> /var/www/simpleinv
 chown -R www-data:www-data /var/www/
 
 # create and import blank database
-service mysql start
-mysqladmin -u root create simple_invoices
-mysql -u root simple_invoices<si-setup.sql
+#service mysql start
+#mysqladmin -u root create simple_invoices
+#mysql -u root simple_invoices<si-setup.sql
+#sleep 30
 
 # shutdown services so patch finishes cleanly
-service apache2 stop
+#service apache2 stop
 service mysql stop
 
 # cleanup
 rm simpleinvoices.$SI_VER.zip
 rm si-setup.sql
-cd /var/www/simpleinvoices/tmp/
-rm -r cache/*
-rm -r log/*
+#cd /var/www/simpleinvoices/tmp/
+#rm -r cache/*
+#rm -r log/*
 apt-get clean
 
 # end
